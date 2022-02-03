@@ -1,0 +1,175 @@
+.error{
+    margin: 0 !important;
+}
+.auth-left-bg{
+    background: url("../../assets/img/auth.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+.text-black{
+    color: black;
+}
+.text-red{
+    color: red;
+}
+.custom-error{
+    color: red;
+}
+.btn-custom-error {
+    background-color: #ff2828;
+    border-color: #ff2828;
+    color: white;
+}
+.btn-custom-error:hover {
+    background-color: white;
+    color: #ff2828 !important;
+}
+.bootstrap-select .dropdown-toggle{
+    border: 1px solid #ebedf2;
+}
+.bootstrap-select .dropdown-toggle:hover{
+    background: none !important;
+}
+
+.table-box{
+    background: url("../../assets/img/table.jpg");
+    background-size: cover;
+    border: 1px solid #5d5d5d;
+    border-radius: 10px;
+    padding: 10px 5px;
+    width: 34vw;
+    height: 34vw;
+    display: inline-table;
+    position: relative;
+    margin-right: 0.7rem;
+    margin-bottom: 20px;
+    color: black;
+}
+.table-box .table-status{
+    position: absolute;
+    border-radius: 50%;
+    top: 5px;
+    right: 5px;
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+}
+.table-box .table-action{
+    position: absolute;
+    width: 100%;
+    bottom: 5px;
+    left: 0;
+    z-index: 1000;
+}
+.table-box h5{
+    word-break: break-all;
+}
+.table-box .table-action i{
+    cursor: pointer;
+}
+.success-shadow{
+    box-shadow: 1px 1px 8px 2px #44ff28;
+}
+.warning-shadow{
+    box-shadow: 1px 1px 8px 2px #fdb322;
+}
+
+.swal-footer{
+    text-align: center;
+}
+
+.quantity {
+
+}
+.quantity input {
+    -webkit-appearance: none;
+    border: none;
+    text-align: center;
+    width: 32px;
+    font-size: 16px;
+    color: #43484D;
+    font-weight: 300;
+}
+
+.quantity button[class*=btn] {
+    width: 30px;
+    height: 30px;
+    background-color: #E1E8EE;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-order{
+    background-color: black;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 25px;
+}
+
+.preview-image{
+    max-width: 100px;
+    max-height: 50px
+}
+
+.border-radius-20{
+    border-radius: 20px;
+}
+.order-image{
+    width: 80px;
+}
+.view-order-list{
+    max-height: 500px;
+    overflow-y: auto;
+}
+.detail{
+    border-bottom: 1px dashed black;
+}
+.b-b-grey{
+    border-bottom: 1px solid grey;
+}
+
+.btn-circle{
+    border-radius: 25px;
+    padding: 10px 20px;
+}
+
+.menu-list{
+    padding-left: 1rem;
+    min-height: 200px;
+}
+.expand-box {
+    list-style-type: none;
+}
+
+.expand-box ul{
+    list-style-type: none;
+}
+
+.expand-box .caret {
+    cursor: pointer;
+    user-select: none;
+    font-size: 1.2rem;
+}
+
+.expand-box .caret::before {
+    content: "\25B6";
+    color: black;
+    display: inline-block;
+    margin-right: 6px;
+}
+
+.expand-box .caret-down::before {
+    transform: rotate(90deg);
+}
+
+.nested {
+    display: none;
+}
+
+.active {
+    display: block;
+}
+.view{
+    cursor: pointer;
+}

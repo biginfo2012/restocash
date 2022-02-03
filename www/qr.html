@@ -1,0 +1,178 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport"
+          content="width=device-width, height=device-height, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src * data: gap: https://ssl.gstatic.com; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval'">
+    <!-- Global stylesheets -->
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/css/atlantis.min.css" rel="stylesheet">
+    <link href="assets/css/fonts.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/spinners.css">
+
+    <!-- custom stylesheets -->
+    <link href="custom/css/style.css" rel="stylesheet">
+    <style>
+        .table-box {
+            cursor: pointer;
+        }
+
+        #order-list td {
+            height: 55px;
+        }
+
+        .quantity {
+            display: flex;
+        }
+
+        @media (min-width: 768px) {
+            .modal-lg {
+                max-width: 650px;
+            }
+        }
+
+        @media (min-width: 992px) {
+            .modal-lg {
+                max-width: 900px;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .modal-lg {
+                max-width: 1000px;
+            }
+        }
+    </style>
+    <!-- Core JS files -->
+    <script src="assets/js/core/jquery.3.2.1.min.js"></script>
+    <script src="assets/js/core/popper.min.js"></script>
+    <script src="assets/js/core/bootstrap.min.js"></script>
+    <!-- /core JS files -->
+
+    <script src="assets/js/plugin/jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
+    <script src="assets/js/plugin/jquery-ui-touch-punch/jquery.ui.touch-punch.min.js"></script>
+    <script src="assets/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js"></script>
+    <script src="assets/js/plugin/jquery.validate/jquery.validate.min.js"></script>
+    <script src="assets/js/atlantis.min.js"></script>
+    <script src="assets/js/plugin/sweetalert/sweetalert.min.js"></script>
+    <script src="assets/js/spinner.js"></script>
+
+    <script src="custom/lang/converter.js?v=202112061555"></script>
+    <script src="custom/lang/es.js?v=202112061555"></script>
+</head>
+<body>
+<div class="preloader" style="display: none">
+    <svg class="circular" viewBox="25 25 50 50">
+        <circle class="path" cx="50" cy="50" r="20" fill="none" stroke-width="2" stroke-miterlimit="10"/>
+    </svg>
+</div>
+<div class="wrapper">
+
+    <!-- Main navbar -->
+    <div class="main-header">
+        <!-- Logo Header -->
+        <div class="logo-header" data-background-color="dark">
+
+            <a class="logo text-center text-white d-flex" style="left: 20%">
+                <img src="assets/img/logo.png" alt="navbar brand" class="navbar-brand"
+                     style="width: 50px;">
+                <span class="pt-1">RestoCash</span>
+            </a>
+            <button class="topbar-toggler more"><i class="icon-options-vertical"></i></button>
+            <div class="nav-toggle">
+                <button class="btn btn-toggle toggle-sidebar">
+                    <i class="icon-menu"></i>
+                </button>
+            </div>
+        </div>
+        <!-- End Logo Header -->
+
+        <!-- Navbar Header -->
+        <nav class="navbar navbar-header navbar-expand-lg" data-background-color="white">
+            <div class="container-fluid d-flex justify-content-between">
+                <ul class="navbar-nav topbar-nav ml-md-auto align-items-center">
+                    <li class="nav-item dropdown hidden-caret">
+                        <a class="nav-link dropdown-toggle" href="">
+                            <i class="fa fa-qrcode"></i>
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown hidden-caret">
+                        <a class="nav-link dropdown-toggle" href="tables.html">
+                            <i class="fa fa-th"></i>
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown hidden-caret">
+                        <a class="nav-link dropdown-toggle" id="logout" style="margin-left: 10px" href="#">
+                            <i class="fa fa-power-off"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <!-- End Navbar -->
+    </div>
+    <!-- /Main navbar -->
+
+    <!-- Page content -->
+    <div class="page-content">
+        <!-- Main content -->
+        <div class="main-panel">
+            <!-- Content area -->
+            <div class="container">
+                <div class="page-inner">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header d-flex align-items-center justify-content-between">
+                                    <h4 class="card-title">Menú QR</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <div id="qrcode"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <!-- /main content -->
+    </div>
+</div>
+<!-- Datatable JS -->
+<script src="assets/js/plugin/qrcode/qrcode.js"></script>
+
+<script>
+    var res_id = localStorage.getItem('restaurant_id')
+    var menuLink = 'https://dev-restaurant.pagocash.cl/restaurant-menu/' + '8948392' + res_id + '5930';
+    let logout_url = 'https://dev-restaurant.pagocash.cl/api/logout'
+    $('#logout').click(function () {
+        $.ajax({
+            url: logout_url,
+            type: 'post',
+            contentType: 'application/json',
+            headers: {
+                'Authorization': 'Bearer ' + localStorage.getItem('token')
+            },
+            success: function(response){
+                if(response.message == 'logout'){
+                    window.location.href = 'index.html';
+                }else{
+                    console.log('error');
+                    window.location.href = 'index.html';
+                }
+            },
+        });
+    })
+
+</script>
+<script src="custom/js/resAdmin/generate-qrcode.js"></script>
+<!-- TODO: Please edit here -->
+</body>
+</html>
