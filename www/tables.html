@@ -226,10 +226,9 @@
                                                     <table class="table table-striped" id="dt_table">
                                                         <thead>
                                                         <tr>
-                                                            <th>Imagen</th>
+                                                            <th>Contar</th>
                                                             <th>Nombre</th>
                                                             <th>Precio venta</th>
-                                                            <th>Contar</th>
                                                         </tr>
                                                         </thead>
                                                         <tbody id="product_tbody">
@@ -258,7 +257,7 @@
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-black btn-round btn-print">Impresión</button>
+<!--                            <button type="button" class="btn btn-black btn-round btn-print">Impresión</button>-->
                             <button type="button" class="btn btn-danger btn-round btn-pend">Cerrar mesa
                             </button>
                             <button type="button" class="btn btn-round" data-dismiss="modal">Cancelar</button>
@@ -341,7 +340,7 @@
                                 title = ''
                             }
                             let table_content = '<div class="table-box" data-index="' +  item["id"]+ '">\n' +
-                                '                                                    <div class="table-status {{$class}}" title="{{$title}}"></div>\n' +
+                                '                                                    <div class="table-status '+ class_str +'" title="'+ title +'"></div>\n' +
                                 '                                                    <h6 class="text-center mb-0">Mesa-' +  item["t_number"]+ '</h6>\n' +
                                 '                                                    <h5 class="text-center">' +  item["name"]+ '</h5>\n' +
                                 '                                                </div>';
@@ -360,21 +359,18 @@
                                 img_url = item['image'];
                             }
                             let price = item['sale_price'];
-                            price = price.toFixed(2)
-                                let product_content = '<tr>\n' +
-                                    '                                                        <td>\n' +
-                                    '                                                                <img src="' + img_url + '" alt="no_img" class="preview-image">\n' +
-                                    '                                                        </td>\n' +
-                                    '                                                        <td>' + item["name"] + '</td>\n' +
-                                    '                                                        <td>' + price + '</td>\n' +
-                                    '                                                        <td>\n' +
-                                    '                                                            <div class="quantity">\n' +
-                                    '                                                                <button class="minus-btn" type="button" name="button">-</button>\n' +
-                                    '                                                                <input type="text" class="order_count" name="order_count_' + item['id'] + '" data-value="' + item['id'] + '" data-price="' + item['sale_price'] + '" value="0" min="0">\n' +
-                                    '                                                                <button class="plus-btn" type="button" name="button">+</button>\n' +
-                                    '                                                            </div>\n' +
-                                    '                                                        </td>\n' +
-                                    '                                                    </tr>';
+                            price = parseInt(price)
+                            let product_content = '<tr>\n' +
+                                '                                                        <td>\n' +
+                                '                                                            <div class="quantity">\n' +
+                                '                                                                <button class="minus-btn" type="button" name="button">-</button>\n' +
+                                '                                                                <input type="text" class="order_count" name="order_count_' + item['id'] + '" data-value="' + item['id'] + '" data-price="' + item['sale_price'] + '" value="0" min="0">\n' +
+                                '                                                                <button class="plus-btn" type="button" name="button">+</button>\n' +
+                                '                                                            </div>\n' +
+                                '                                                        </td>\n' +
+                                '                                                        <td>' + item["name"] + '</td>\n' +
+                                '                                                        <td>' + price + '</td>\n' +
+                                '                                                    </tr>';
                             $('#product_tbody').prepend(product_content);
                         }
                         $('#dt_table').DataTable({

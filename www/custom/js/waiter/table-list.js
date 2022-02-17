@@ -6,72 +6,90 @@ let path_pend_table = 'https://dev-restaurant.pagocash.cl/api/pend-table';
 let path_delete_order = 'https://dev-restaurant.pagocash.cl/api/delete-order';
 let path_mark_deliver = 'https://dev-restaurant.pagocash.cl/api/deliver-order'
 //let token = localStorage.getItem('token')
-$(document).on('click','.table-box', function () {
+$(document).on('click', '.table-box', function () {
     tableId = $(this).data('index');
-    showLoading()
-    $.ajax({
-        url: path_table_info,
-        type: 'post',
-        headers: {
-            'Authorization': 'Bearer ' + token
-        },
-        data: {tableId : tableId},
-        success: function(response){
-            hideLoading()
-            if(response.message == 'success'){
-                console.log(response.result.table);
-                let data = response.result.table;
-                if(data.status == "open" || data.status == "closed" || data.status == "ordered"){
-                    let orders = response.result.orders;
-                    let code = '';
-                    let total = 0;
-                    if (orders.length > 0){
-                        code += '<div class="w-100 d-flex justify-content-end mb-2">'
-                        if(data.status == "ordered")
-                            code += '<button class="btn btn-black btn-round btn-deliver btn-sm mr-2"><i class="fa fa-check mr-2"></i>Marcar como entregado</button>'
-                        code += '<button class="btn btn-danger btn-round btn-order-delete btn-sm">Eliminar</button></div>'
-                        for (let i=0; i<orders.length; i++){
-                            let val = orders[i].product.sale_price * orders[i].order_count;
-                            let delivered = orders[i].deliver_status == 1 ? '(Entregado)' : ''
-                            code += ' <div><div class="d-flex align-items-center mb-1">\n' +
-                                '                                    <input type="checkbox" name="orders_'+orders[i].id+'" class="orders mr-2" data-value="'+ orders[i].id +'">' +
-                                '                                    <h4 class="text-danger mb-0">' + orders[i].product.name + delivered + '</h4></div>\n' +
-                                '                                    <h4 class="text-right mb-1">' + orders[i].product.sale_price + '*' + orders[i].order_count + '='+ val +'</h4>\n' +
-                                '                                </div>'
+    if (!$(this).find('.table-status').hasClass('bg-danger-gradient')) {
+        showLoading()
+        $.ajax({
+            url: path_table_info,
+            type: 'post',
+            headers: {
+                'Authorization': 'Bearer ' + token
+            },
+            data: {tableId: tableId},
+            success: function (response) {
+                hideLoading()
+                if (response.message == 'success') {
+                    console.log(JSON.stringify(response));
+                    let data = response.result.table;
+                    console.log(data);
+                    if (data.status == "open" || data.status == "closed" || data.status == "ordered") {
+                        let orders = response.result.orders;
+                        let code = '';
+                        let total = 0;
+                        if (orders.length > 0) {
+                            code += '<div class="w-100 d-flex justify-content-end mb-2">'
+                            if (data.status == "ordered")
+                                code += '<button class="btn btn-black btn-round btn-deliver btn-sm mr-2"><i class="fa fa-check mr-2"></i>Marcar como entregado</button>'
+                            code += '<button class="btn btn-danger btn-round btn-order-delete btn-sm">Eliminar</button></div>'
+                            for (let i = 0; i < orders.length; i++) {
+                                let val = orders[i].product.sale_price * orders[i].order_count;
+                                let delivered = orders[i].deliver_status == 1 ? '(Entregado)' : ''
+                                code += ' <div><div class="d-flex align-items-center mb-1">\n' +
+                                    '                                    <input type="checkbox" name="orders_' + orders[i].id + '" class="orders mr-2" data-value="' + orders[i].id + '">' +
+                                    '                                    <h4 class="text-danger mb-0">' + orders[i].product.name + delivered + '</h4></div>\n' +
+                                    '                                    <h4 class="text-right mb-1">' + orders[i].product.sale_price + '*' + orders[i].order_count + '=' + val + '</h4>\n' +
+                                    '                                </div>'
 
-                            total += val;
-                        }
-                    }
-                    $('#assigned-orders').html(code);
-                    $('#detail-total').html(total);
-                    checkCount()
-                    checkDisable()
-                    $('.btn-pend').prop('disabled', false)
-                    $('#detailModal').modal('show')
-                }else{
-                    swal('Esperando mesa de cierre de caja.', {
-                        icon: "info",
-                        buttons : {
-                            confirm : {
-                                className: 'btn btn-black'
+                                total += val;
                             }
                         }
-                    })
-                }
-            }else{
-                swal('Error del Servidor', {
-                    icon: "error",
-                    buttons : {
-                        confirm : {
-                            className: 'btn btn-danger'
-                        }
+                        $('#assigned-orders').html(code);
+                        $('#detail-total').html(total);
+                        checkCount()
+                        checkDisable()
+                        $('.btn-pend').prop('disabled', false)
+                        $('#detailModal').modal('show')
+                    } else {
+                        swal('Esperando mesa de cierre de caja.', {
+                            icon: "info",
+                            buttons: {
+                                confirm: {
+                                    className: 'btn btn-black'
+                                }
+                            }
+                        })
                     }
-                }).then((confirmed) => {
-                    location.reload();
-                });
-            }
-        },
-    });
+                } else {
+                    swal('Error del Servidor', {
+                        icon: "error",
+                        buttons: {
+                            confirm: {
+                                className: 'btn btn-danger'
+                            }
+                        }
+                    }).then((confirmed) => {
+                        location.reload();
+                    });
+                }
+            },
+        });
+    }
+    else{
+        var url = 'https://dev-restaurant.pagocash.cl/exportPdf/' + tableId;
+        console.log(url);
+        $('#qrModal').modal('show');
+        $('#qrcode').empty();
+        var qrcode = new QRCode(document.getElementById("qrcode"), {
+            text: url,
+            width: 300,
+            height: 300,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+    }
+
 })
 
 //not use
@@ -144,50 +162,51 @@ $(document).on('click','.table-box', function () {
 
 $(document).on('click', '.all', function () {
     var checked = $('input[name=select_all]:checked').val();
-    checked = checked=="on"?true:false;
+    checked = checked == "on" ? true : false;
     $('.items').each(function () {
         $(this).prop('checked', checked);
     })
     disableAssign()
 })
 
-function disableAssign(){
+function disableAssign() {
     let checked_count = 0;
     let total_count = 0;
     let total = 0;
     $('.items').each(function () {
-        total_count ++;
+        total_count++;
         let index = $(this).data('value');
-        let checked = $('input[name=items_'+index+']:checked').val();
+        let checked = $('input[name=items_' + index + ']:checked').val();
         let price;
         let count;
-        if (checked){
+        if (checked) {
             checked_count++;
             price = $(this).data('price')
             count = $(this).data('count')
-            total += price*count;
+            total += price * count;
         }
     })
-    if (checked_count == 0){
+    if (checked_count == 0) {
         $('.btn-assign').prop('disabled', true)
-    }else{
+    } else {
         $('.btn-assign').prop('disabled', false)
     }
 
     //calculate total
-    if(total_count > 0){
+    if (total_count > 0) {
         $('#total-price').html(total);
     }
 }
-$(document).on('click','.items', function () {
+
+$(document).on('click', '.items', function () {
     disableAssign()
 })
 
-$(document).on('click','.btn-deliver', function () {
+$(document).on('click', '.btn-deliver', function () {
     let selected = [];
     $('.orders').each(function () {
         let index = $(this).data('value');
-        let checked = $('input[name=orders_'+index+']:checked').val();
+        let checked = $('input[name=orders_' + index + ']:checked').val();
         if (checked)
             selected.push(index)
     })
@@ -195,30 +214,29 @@ $(document).on('click','.btn-deliver', function () {
     $.ajax({
         url: path_mark_deliver,
         type: 'post',
-        contentType: 'application/json',
         headers: {
             'Authorization': 'Bearer ' + token
         },
-        data: {tableId : tableId, orders: selected.toString()},
-        success: function(response){
+        data: {tableId: tableId, orders: selected.toString()},
+        success: function (response) {
             hideLoading()
-            if(response.message == "success"){
+            if (response.message == "success") {
                 $('#detailModal').modal('hide');
                 swal('Éxito', {
                     icon: "success",
-                    buttons : {
-                        confirm : {
+                    buttons: {
+                        confirm: {
                             className: 'btn btn-success'
                         }
                     }
                 }).then((confirmed) => {
                     location.reload();
                 });
-            }else{
+            } else {
                 swal('Error del Servidor', {
                     icon: "error",
-                    buttons : {
-                        confirm : {
+                    buttons: {
+                        confirm: {
                             className: 'btn btn-danger'
                         }
                     }
@@ -280,7 +298,7 @@ $(document).on('click','.btn-deliver', function () {
 //     });
 // })
 
-$('.minus-btn').on('click', function(e) {
+$(document).on('click', '.minus-btn', function (e) {
     e.preventDefault();
     var $this = $(this);
     var $input = $this.closest('div').find('input');
@@ -296,9 +314,10 @@ $('.minus-btn').on('click', function(e) {
     checkCount()
 });
 
-$('.plus-btn').on('click', function(e) {
+$(document).on('click', '.plus-btn', function (e) {
     e.preventDefault();
     var $this = $(this);
+    console.log('d');
     var $input = $this.closest('div').find('input');
     var value = parseInt($input.val());
 
@@ -308,32 +327,32 @@ $('.plus-btn').on('click', function(e) {
     checkCount()
 });
 
-function checkCount(){
+function checkCount() {
     let new_total = 0;
     let count = 0;
     $('.order_count').each(function () {
         let val = $(this).val();
-        if(val > 0){
-            count ++;
+        if (val > 0) {
+            count++;
             let price = $(this).data('price')
             new_total += val * price
         }
     })
-    if (count > 0){
+    if (count > 0) {
         $('.btn-order').prop('disabled', false)
-    }else{
+    } else {
         $('.btn-order').prop('disabled', true)
     }
     $('#new-total').html(new_total)
 }
 
-$(document).on('click','.btn-order', function () {
+$(document).on('click', '.btn-order', function () {
     showLoading()
     let items = [];
     $('.order_count').each(function () {
         let id = $(this).data('value');
         let val = $(this).val();
-        if(val > 0){
+        if (val > 0) {
             items[id] = val;
         }
     })
@@ -341,34 +360,33 @@ $(document).on('click','.btn-order', function () {
     $.ajax({
         url: path_create_orders,
         type: 'post',
-        contentType: 'application/json',
         headers: {
             'Authorization': 'Bearer ' + token
         },
         data: {
-            items : JSON.stringify(items),
-            tableId : tableId,
-            comment : comment
+            items: JSON.stringify(items),
+            tableId: tableId,
+            comment: comment
         },
-        success: function(response){
+        success: function (response) {
             hideLoading()
-            if(response.message == "success"){
+            if (response.message == "success") {
                 $('#newModal').modal('hide');
                 swal('Éxito', {
                     icon: "success",
-                    buttons : {
-                        confirm : {
+                    buttons: {
+                        confirm: {
                             className: 'btn btn-success'
                         }
                     }
                 }).then((confirmed) => {
                     location.reload();
                 });
-            }else{
+            } else {
                 swal('Error del Servidor', {
                     icon: "error",
-                    buttons : {
-                        confirm : {
+                    buttons: {
+                        confirm: {
                             className: 'btn btn-danger'
                         }
                     }
@@ -380,39 +398,36 @@ $(document).on('click','.btn-order', function () {
     });
 })
 
-$(document).on('click','.btn-pend', function () {
-    showLoading()
-    let formData = new FormData();
-    formData.append('tableId',tableId);
-    formData.append('_token',_token);
+$(document).on('click', '.btn-pend', function () {
+    showLoading();
     $.ajax({
         url: path_pend_table,
-        contentType: 'application/json',
+        type: 'post',
         headers: {
             'Authorization': 'Bearer ' + token
         },
         data: {
-            tableId : tableId,
+            tableId: tableId,
         },
-        success: function(response){
+        success: function (response) {
             hideLoading()
-            if(response.message == "success"){
+            if (response.message == "success") {
                 $('#detailModal').modal('hide');
                 swal('Éxito', {
                     icon: "success",
-                    buttons : {
-                        confirm : {
+                    buttons: {
+                        confirm: {
                             className: 'btn btn-success'
                         }
                     }
                 }).then((confirmed) => {
                     location.reload();
                 });
-            }else{
+            } else {
                 swal('Error del Servidor', {
                     icon: "error",
-                    buttons : {
-                        confirm : {
+                    buttons: {
+                        confirm: {
                             className: 'btn btn-danger'
                         }
                     }
@@ -439,46 +454,47 @@ $(document).on('click', '.btn-print', function () {
     let selected = [];
     $('.orders').each(function () {
         let index = $(this).data('value');
-        let checked = $('input[name=orders_'+index+']:checked').val();
+        let checked = $('input[name=orders_' + index + ']:checked').val();
         if (checked)
             selected.push(index)
     })
     var items = selected.toString();
     var appened = selected.length > 0 ? "?items=" + items : ''
-    var url = HOST_URL + '/exportPdf/' + tableId + appened;
+    var url = 'https://dev-restaurant.pagocash.cl/exportPdf/' + tableId + appened;
     console.log(url);
-    $('#qrModal').modal('show')
+    $('#qrModal').modal('show');
+    $('#qrcode').empty();
     var qrcode = new QRCode(document.getElementById("qrcode"), {
         text: url,
         width: 300,
         height: 300,
-        colorDark : "#000000",
-        colorLight : "#ffffff",
-        correctLevel : QRCode.CorrectLevel.H
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
     });
     //window.open(url, '_blank');
 })
 
 
-function checkDisable(){
+function checkDisable() {
     let checked_count = 0;
     $('.orders').each(function () {
         let index = $(this).data('value');
-        let checked = $('input[name=orders_'+index+']:checked').val();
-        if (checked){
+        let checked = $('input[name=orders_' + index + ']:checked').val();
+        if (checked) {
             checked_count++;
         }
     })
-    if (checked_count == 0){
+    if (checked_count == 0) {
         $('.btn-order-delete').prop('disabled', true)
         $('.btn-deliver').prop('disabled', true)
-    }else{
+    } else {
         $('.btn-order-delete').prop('disabled', false)
         $('.btn-deliver').prop('disabled', false)
     }
 }
 
-$(document).on('click','.orders', function () {
+$(document).on('click', '.orders', function () {
     checkDisable()
 })
 
@@ -488,60 +504,55 @@ $(document).on('click', '.btn-order-delete', function () {
         text: 'Estos pedidos se eliminarán de forma permanente.',
         type: 'question',
         icon: 'warning',
-        buttons:{
+        buttons: {
             confirm: {
-                text : 'Si',
-                className : 'btn btn-black'
+                text: 'Si',
+                className: 'btn btn-black'
             },
             cancel: {
                 visible: true,
-                text : 'Cancelar',
+                text: 'Cancelar',
                 className: 'btn'
             }
         }
     }).then((confirmed) => {
-        if (confirmed){
+        if (confirmed) {
             showLoading()
             let selected = [];
             $('.orders').each(function () {
                 let index = $(this).data('value');
-                let checked = $('input[name=orders_'+index+']:checked').val();
+                let checked = $('input[name=orders_' + index + ']:checked').val();
                 if (checked)
                     selected.push(index)
             })
-            let formData = new FormData();
-            formData.append('_token',_token);
-            formData.append('tableId',tableId);
-            formData.append('orders',selected.toString());
             $.ajax({
                 url: path_delete_order,
                 type: 'post',
-                contentType: 'application/json',
                 headers: {
                     'Authorization': 'Bearer ' + token
                 },
                 data: {
-                    tableId : tableId,
+                    tableId: tableId,
                 },
-                success: function(response){
+                success: function (response) {
                     hideLoading()
-                    if(response.message == 'success'){
+                    if (response.message == 'success') {
                         $('#detailModal').modal('hide');
                         swal('Éxito', {
                             icon: "success",
-                            buttons : {
-                                confirm : {
+                            buttons: {
+                                confirm: {
                                     className: 'btn btn-success'
                                 }
                             }
                         }).then((confirmed) => {
                             location.reload();
                         });
-                    }else{
+                    } else {
                         swal('Error del Servidor', {
                             icon: "error",
-                            buttons : {
-                                confirm : {
+                            buttons: {
+                                confirm: {
                                     className: 'btn btn-danger'
                                 }
                             }
