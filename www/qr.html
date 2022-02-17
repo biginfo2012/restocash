@@ -131,7 +131,7 @@
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-12">
-                                            <div id="qrcode"></div>
+                                            <div id="qrcode" style="padding-left: calc(50% - 150px);"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -150,7 +150,7 @@
 
 <script>
     var res_id = localStorage.getItem('restaurant_id')
-    var menuLink = 'https://dev-restaurant.pagocash.cl/restaurant-menu/' + '8948392' + res_id + '5930';
+    var menuLink = 'https://dev-restaurant.pagocash.cl/restaurant-menu/' + '8948392' + res_id + '593';
     let logout_url = 'https://dev-restaurant.pagocash.cl/api/logout'
     $('#logout').click(function () {
         $.ajax({
@@ -160,10 +160,10 @@
             headers: {
                 'Authorization': 'Bearer ' + localStorage.getItem('token')
             },
-            success: function(response){
-                if(response.message == 'logout'){
+            success: function (response) {
+                if (response.message == 'logout') {
                     window.location.href = 'index.html';
-                }else{
+                } else {
                     console.log('error');
                     window.location.href = 'index.html';
                 }

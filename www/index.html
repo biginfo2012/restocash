@@ -31,7 +31,8 @@
 </head>
 <body class="login">
 <div class="wrapper wrapper-login p-0">
-    <div class="login-aside d-flex align-items-center justify-content-center bg-white" style="height: 100vh; width: 100vw">
+    <div class="login-aside d-flex align-items-center justify-content-center bg-white"
+         style="height: 100vh; width: 100vw;">
         <form method="GET" id="loginForm" class="validation">
             <div class="container container-login container-transparent animated fadeIn">
                 <div class="text-center">
@@ -58,7 +59,8 @@
                         <label class="error-part m-0 pl-2"></label>
                     </div>
                     <div class="form-group form-action-d-flex mb-3" style="justify-content: flex-end !important;">
-                        <button type="submit" id="btn_login" class="btn btn-black btn-round col-md-5 float-right mt-3 mt-sm-0 fw-bold">
+                        <button type="submit" id="btn_login"
+                                class="btn btn-black btn-round col-md-5 float-right mt-3 mt-sm-0 fw-bold">
                             Acceso
                         </button>
                     </div>
@@ -76,38 +78,36 @@
 
 <script src="custom/js/auth.js"></script>
 <script>
-    let login_url = 'https://dev-restaurant.pagocash.cl/api/login'
+    let login_url = 'https://dev-restaurant.pagocash.cl/api/login';
     $('#btn_login').click(function (e) {
         e.preventDefault();
-        if($('#loginForm').valid()){
+        if ($('#loginForm').valid()) {
             //window.location.href = 'tables.html';
             $.ajax({
                 url: login_url,
                 type: 'get',
                 data: {
-                    email : $('#email').val(),
+                    email: $('#email').val(),
                     password: $('#password').val()
                 },
                 dataType: 'json',
-                success: function(response){
+                success: function (response) {
                     console.log(response);
                     let message = response.message;
-                    if(message == 'success'){
+                    console.log(message);
+                    if (message == 'success') {
                         localStorage.setItem('token', response.result.token);
                         localStorage.setItem('restaurant_id', response.result.user.restaurant_id);
                         window.location.href = 'tables.html';
-                    }
-                    else if(message == "ERR_INVALID_USER_EMAIL"){
+                    } else if (message == "ERR_INVALID_USER_EMAIL") {
                         $('#email').parent().addClass('has-error');
                         let email_err = '<label id="email-error" class="error" for="email">Este campo es requerido.</label>'
                         $('#email').after(email_err);
-                    }
-                    else if(message == "ERR_INVALID_PASSWORD"){
+                    } else if (message == "ERR_INVALID_PASSWORD" || message == "ERR_INVALID_USER") {
                         $('#password').parent().parent().addClass('has-error');
                         let password_err = '<label id="password-error" class="error" for="password">Este campo es requerido.</label>'
                         $('#password').after(password_err);
-                    }
-                    else{
+                    } else {
                         $('#email').parent().addClass('has-error');
                         let email_err = '<label id="email-error" class="error" for="email">Este campo es requerido.</label>'
                         $('#email').after(email_err);

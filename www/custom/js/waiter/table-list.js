@@ -4,8 +4,55 @@ let path_get_orders = '';
 let path_create_orders = 'https://dev-restaurant.pagocash.cl/api/create-order';
 let path_pend_table = 'https://dev-restaurant.pagocash.cl/api/pend-table';
 let path_delete_order = 'https://dev-restaurant.pagocash.cl/api/delete-order';
-let path_mark_deliver = 'https://dev-restaurant.pagocash.cl/api/deliver-order'
-//let token = localStorage.getItem('token')
+let path_mark_deliver = 'https://dev-restaurant.pagocash.cl/api/deliver-order';
+let path_save_comment = 'https://dev-restaurant.pagocash.cl/api/save-comment';
+
+$('#btn-comment').click(function () {
+    let comment = $('#comment').val();
+    if (comment != '') {
+        showLoading();
+        $.ajax({
+            url: path_save_comment,
+            type: 'post',
+            headers: {
+                'Authorization': 'Bearer ' + token
+            },
+            data: {tableId: tableId, comment: comment},
+            success: function (response) {
+                hideLoading()
+                if (response.message == 'success') {
+                    let data = response.result.table;
+                    if (data.status == "open" || data.status == "closed" || data.status == "ordered") {
+                        let orders = response.result.orders;
+                        generateOrderedList(data, orders)
+                        $('.btn-pend').prop('disabled', false)
+                        $('#comment').val('');
+                    } else {
+                        swal('Esperando mesa de cierre de caja.', {
+                            icon: "info",
+                            buttons: {
+                                confirm: {
+                                    className: 'btn btn-black'
+                                }
+                            }
+                        })
+                    }
+                } else {
+                    swal('El pedido aún no ha sido creado.', {
+                        icon: "error",
+                        buttons: {
+                            confirm: {
+                                className: 'btn btn-danger'
+                            }
+                        }
+                    }).then((confirmed) => {
+                        location.reload();
+                    });
+                }
+            },
+        });
+    }
+});
 $(document).on('click', '.table-box', function () {
     tableId = $(this).data('index');
     if (!$(this).find('.table-status').hasClass('bg-danger-gradient')) {
@@ -20,36 +67,18 @@ $(document).on('click', '.table-box', function () {
             success: function (response) {
                 hideLoading()
                 if (response.message == 'success') {
-                    console.log(JSON.stringify(response));
                     let data = response.result.table;
-                    console.log(data);
                     if (data.status == "open" || data.status == "closed" || data.status == "ordered") {
                         let orders = response.result.orders;
-                        let code = '';
-                        let total = 0;
-                        if (orders.length > 0) {
-                            code += '<div class="w-100 d-flex justify-content-end mb-2">'
-                            if (data.status == "ordered")
-                                code += '<button class="btn btn-black btn-round btn-deliver btn-sm mr-2"><i class="fa fa-check mr-2"></i>Marcar como entregado</button>'
-                            code += '<button class="btn btn-danger btn-round btn-order-delete btn-sm">Eliminar</button></div>'
-                            for (let i = 0; i < orders.length; i++) {
-                                let val = orders[i].product.sale_price * orders[i].order_count;
-                                let delivered = orders[i].deliver_status == 1 ? '(Entregado)' : ''
-                                code += ' <div><div class="d-flex align-items-center mb-1">\n' +
-                                    '                                    <input type="checkbox" name="orders_' + orders[i].id + '" class="orders mr-2" data-value="' + orders[i].id + '">' +
-                                    '                                    <h4 class="text-danger mb-0">' + orders[i].product.name + delivered + '</h4></div>\n' +
-                                    '                                    <h4 class="text-right mb-1">' + orders[i].product.sale_price + '*' + orders[i].order_count + '=' + val + '</h4>\n' +
-                                    '                                </div>'
-
-                                total += val;
-                            }
-                        }
-                        $('#assigned-orders').html(code);
-                        $('#detail-total').html(total);
+                        generateOrderedList(data, orders)
                         checkCount()
                         checkDisable()
                         $('.btn-pend').prop('disabled', false)
-                        $('#detailModal').modal('show')
+                        $('#detailModal').modal('show');
+                        $('.order_count').each(function () {
+                            $(this).val(1);
+                        })
+                        $('#comment').val('');
                     } else {
                         swal('Esperando mesa de cierre de caja.', {
                             icon: "info",
@@ -74,9 +103,8 @@ $(document).on('click', '.table-box', function () {
                 }
             },
         });
-    }
-    else{
-        var url = 'https://dev-restaurant.pagocash.cl/exportPdf/' + tableId;
+    } else {
+        var url = 'https://dev-restaurant.pagocash.cl/order-detail/' + tableId;
         console.log(url);
         $('#qrModal').modal('show');
         $('#qrcode').empty();
@@ -89,76 +117,65 @@ $(document).on('click', '.table-box', function () {
             correctLevel: QRCode.CorrectLevel.H
         });
     }
-
 })
 
-//not use
-// $(document).on('click','.btn-next', function () {
-//     $('#optionModal').modal('hide');
-//     var checked = $('input[name=orderType]:checked').val();
-//     if(checked == 1){
-//         $.ajax({
-//             url: path_get_orders,
-//             type: 'post',
-//             contentType: 'application/json',
-//             headers: {
-//                 'Authorization': 'Bearer ' + token
-//             },
-//             success: function(response){
-//                 if(response.result){
-//                     let code = '';
-//                     let data = response.data;
-//                     if (data.length > 0){
-//                         code = '<div class="table-responsive"><table class="table table-striped"><tbody>'
-//                         code += '<tr>\n' +
-//                             '<td><input type="checkbox" name="select_all" class="all"></td>\n' +
-//                             '<td>' + langs('messages.client') + '</td>\n' +
-//                             '<td>' + langs('messages.product') + '</td>\n' +
-//                             '<td>' + langs('messages.image') + '</td>\n' +
-//                             '<td>' + langs('messages.price') + '</td>\n' +
-//                             '<td>' + langs('messages.count') + '</td>\n' +
-//                             '</tr>\n';
-//                         for (let i=0; i<data.length; i++){
-//                             code += '<tr>'
-//                             code += '<td><input type="checkbox" name="items_'+data[i].id+'" class="items" data-value="'+ data[i].id +'" data-price="'+ data[i].product.sale_price +'" data-count="'+ data[i].order_count +'" value="'+ data[i].id +'"></td>'
-//                             code += '<td>' + data[i].client.name + '</td>'
-//                             code += '<td>' + data[i].product.name + '</td>'
-//                             code += '<td> <img src="' + data[i].product.image + '" alt="no_img" class="preview-image"></td>'
-//                             code += '<td>' + data[i].product.sale_price + '</td>'
-//                             code += '<td>' + data[i].order_count + '</td>'
-//                             code += '</tr>'
-//                         }
-//                         code += '</tbody></table></div>';
-//                         code += '<h4 class="text-right">'+langs('messages.total')+' : <span id="total-price"></span></h4>'
-//                     }else{
-//                         code = '<h3 class="text-center">Sin ordenes</h3>'
-//                     }
-//                     $('#order-list').html(code);
-//                     $('#existingModal').modal('show')
-//                 }else{
-//                     swal(langs('messages.server_error'), {
-//                         icon: "error",
-//                         buttons : {
-//                             confirm : {
-//                                 className: 'btn btn-danger'
-//                             }
-//                         }
-//                     }).then((confirmed) => {
-//                         location.reload();
-//                     });
-//                 }
-//                 disableAssign()
-//             },
-//         });
-//     }
-//     else{
-//         checkCount();
-//         $('#assigned-orders').html('');
-//         $('#detail-total').html(0)
-//         $('.btn-pend').prop('disabled', true)
-//         setTimeout(function(){$('#detailModal').modal('show');}, 500);
-//     }
-// })
+function generateOrderedList(tableData, orders) {
+    let code = '';
+    let comment_code = '';
+    let comment = ''
+    let total = 0;
+    console.log(orders);
+    if (orders.length > 0) {
+        $('#btn-comment')[0].disabled = false;
+        code += '<div class="w-100 d-flex justify-content-end mb-2">'
+        if (tableData.status == "ordered")
+            code += '<button class="btn btn-black btn-round btn-deliver btn-sm mr-2"><i class="fa fa-check mr-2"></i>' + langs('messages.mark_as_deliver') + '</button>'
+        code += '<button class="btn btn-danger btn-round btn-order-delete btn-sm">' + langs('messages.delete') + '</button></div>'
+        for (let i = 0; i < orders.length; i++) {
+            let val = orders[i].product.sale_price * orders[i].order_count;
+            let delivered = orders[i].deliver_status == 1 ? '(Entregado)' : ''
+            code += ' <div><div class="d-flex align-items-center mb-1">\n' +
+                '                                    <input type="checkbox" name="orders_' + orders[i].id + '" class="orders mr-2" data-value="' + orders[i].id + '">' +
+                '                                    <h4 class="text-danger mb-0">' + orders[i].product.name + delivered + '</h4></div>\n' +
+                '                                    <h4 class="text-right mb-1">' + orders[i].product.sale_price + '*' + orders[i].order_count + '=' + val + '</h4>\n' +
+                '                                </div>'
+            if (orders[i].comment != null) {
+                if (comment != orders[i].comment) {
+                    comment = orders[i].comment;
+                    comment_code += '<div><p style="margin-bottom: 0;">' + orders[i].comment + '</p></div>';
+                }
+            }
+            total += val;
+        }
+    } else {
+        $('#btn-comment')[0].disabled = true;
+    }
+    $('#assigned-orders').html(code);
+    $('#comment_area').html(comment_code);
+    $('#detail-total').html(total);
+}
+
+function getOrderList() {
+    $.ajax({
+        url: path_table_info,
+        type: 'post',
+        headers: {
+            'Authorization': 'Bearer ' + token
+        },
+        data: {tableId: tableId},
+        success: function (response) {
+            if (response.message == 'success') {
+                let data = response.result.table;
+                let orders = response.result.orders;
+                generateOrderedList(data, orders)
+                checkCount()
+                checkDisable()
+            } else {
+                $('#assigned-orders').html(langs('messages.server_error'));
+            }
+        },
+    });
+}
 
 $(document).on('click', '.all', function () {
     var checked = $('input[name=select_all]:checked').val();
@@ -221,7 +238,6 @@ $(document).on('click', '.btn-deliver', function () {
         success: function (response) {
             hideLoading()
             if (response.message == "success") {
-                $('#detailModal').modal('hide');
                 swal('Éxito', {
                     icon: "success",
                     buttons: {
@@ -230,9 +246,10 @@ $(document).on('click', '.btn-deliver', function () {
                         }
                     }
                 }).then((confirmed) => {
-                    location.reload();
+                    getOrderList();
                 });
             } else {
+                $('#detailModal').modal('hide');
                 swal('Error del Servidor', {
                     icon: "error",
                     buttons: {
@@ -317,12 +334,9 @@ $(document).on('click', '.minus-btn', function (e) {
 $(document).on('click', '.plus-btn', function (e) {
     e.preventDefault();
     var $this = $(this);
-    console.log('d');
     var $input = $this.closest('div').find('input');
     var value = parseInt($input.val());
-
     value = value + 1;
-
     $input.val(value);
     checkCount()
 });
@@ -349,14 +363,10 @@ function checkCount() {
 $(document).on('click', '.btn-order', function () {
     showLoading()
     let items = [];
-    $('.order_count').each(function () {
-        let id = $(this).data('value');
-        let val = $(this).val();
-        if (val > 0) {
-            items[id] = val;
-        }
-    })
-    let comment = $('#comment').val();
+    let id = $(this).prev().prev().data('value')
+    let val = $(this).prev().prev().val()
+    items[id] = val;
+    let comment = '';
     $.ajax({
         url: path_create_orders,
         type: 'post',
@@ -380,7 +390,7 @@ $(document).on('click', '.btn-order', function () {
                         }
                     }
                 }).then((confirmed) => {
-                    location.reload();
+                    getOrderList();
                 });
             } else {
                 swal('Error del Servidor', {
@@ -399,56 +409,66 @@ $(document).on('click', '.btn-order', function () {
 })
 
 $(document).on('click', '.btn-pend', function () {
-    showLoading();
-    $.ajax({
-        url: path_pend_table,
-        type: 'post',
-        headers: {
-            'Authorization': 'Bearer ' + token
-        },
-        data: {
-            tableId: tableId,
-        },
-        success: function (response) {
-            hideLoading()
-            if (response.message == "success") {
-                $('#detailModal').modal('hide');
-                swal('Éxito', {
-                    icon: "success",
-                    buttons: {
-                        confirm: {
-                            className: 'btn btn-success'
-                        }
-                    }
-                }).then((confirmed) => {
-                    location.reload();
-                });
-            } else {
-                swal('Error del Servidor', {
-                    icon: "error",
-                    buttons: {
-                        confirm: {
-                            className: 'btn btn-danger'
-                        }
-                    }
-                }).then((confirmed) => {
-                    location.reload();
-                });
+    swal({
+        title: 'Estas seguro?',
+        text: 'Estás realmente cerrando esta mesa?',
+        type: 'question',
+        icon: 'warning',
+        buttons: {
+            confirm: {
+                text: 'Si',
+                className: 'btn btn-black'
+            },
+            cancel: {
+                visible: true,
+                text: 'Cancelar',
+                className: 'btn'
             }
-        },
+        }
+    }).then((confirmed) => {
+        if (confirmed) {
+            showLoading();
+            $.ajax({
+                url: path_pend_table,
+                type: 'post',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                data: {
+                    tableId: tableId,
+                },
+                success: function (response) {
+                    hideLoading()
+                    if (response.message == "success") {
+                        $('#detailModal').modal('hide');
+                        swal('Éxito', {
+                            icon: "success",
+                            buttons: {
+                                confirm: {
+                                    className: 'btn btn-success'
+                                }
+                            }
+                        }).then((confirmed) => {
+                            location.reload();
+                        });
+                    } else {
+                        swal('Error del Servidor', {
+                            icon: "error",
+                            buttons: {
+                                confirm: {
+                                    className: 'btn btn-danger'
+                                }
+                            }
+                        }).then((confirmed) => {
+                            location.reload();
+                        });
+                    }
+                },
+            });
+        }
     });
-})
 
-// $(document).ready(function () {
-//     $('#dt_table').DataTable({
-//         "pageLength": 10,
-//         "lengthChange": false,
-//         "order": [[ 1, 'asc' ]],
-//         "aoColumnDefs": [
-//             { 'bSortable': false, 'aTargets': [ 0, 3 ] }
-//         ]
-//     });
-// })
+})
 
 $(document).on('click', '.btn-print', function () {
     let selected = [];
@@ -472,7 +492,6 @@ $(document).on('click', '.btn-print', function () {
         colorLight: "#ffffff",
         correctLevel: QRCode.CorrectLevel.H
     });
-    //window.open(url, '_blank');
 })
 
 
@@ -517,7 +536,7 @@ $(document).on('click', '.btn-order-delete', function () {
         }
     }).then((confirmed) => {
         if (confirmed) {
-            showLoading()
+            showLoading();
             let selected = [];
             $('.orders').each(function () {
                 let index = $(this).data('value');
@@ -533,11 +552,11 @@ $(document).on('click', '.btn-order-delete', function () {
                 },
                 data: {
                     tableId: tableId,
+                    orders: selected.toString()
                 },
                 success: function (response) {
                     hideLoading()
                     if (response.message == 'success') {
-                        $('#detailModal').modal('hide');
                         swal('Éxito', {
                             icon: "success",
                             buttons: {
@@ -546,9 +565,10 @@ $(document).on('click', '.btn-order-delete', function () {
                                 }
                             }
                         }).then((confirmed) => {
-                            location.reload();
+                            getOrderList();
                         });
                     } else {
+                        $('#detailModal').modal('hide');
                         swal('Error del Servidor', {
                             icon: "error",
                             buttons: {
